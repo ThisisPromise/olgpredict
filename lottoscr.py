@@ -9,16 +9,18 @@ import os
 import re
 import requests
 from bs4 import BeautifulSoup
-os.system('playwright install')
-os.system('playwright install-deps')
 import asyncio
 import concurrent.futures
-import streamlit as st
 from playwright.async_api import async_playwright
 
+# Ensure that the Playwright browsers and dependencies are installed
+os.system('playwright install')
+os.system('playwright install-deps')
 
+# Enable eager execution for TensorFlow functions
 tf.config.run_functions_eagerly(True)
 
+# Lottery configuration for two different games
 LOTTERY_CONFIG = {
     'Lotto Max': {
         'url': 'https://www.olg.ca/en/lottery/play-lotto-max-encore/past-results.html',
@@ -64,8 +66,7 @@ if 'lotto_max_state' not in st.session_state:
 if 'lotto_649_state' not in st.session_state:
     st.session_state.lotto_649_state = 'Wednesday'
 
-
-
+# --- Asynchronous Playwright scraping function ---
 async def async_scrape_lottery(lottery_name):
     config = LOTTERY_CONFIG[lottery_name]
     try:
@@ -76,7 +77,7 @@ async def async_scrape_lottery(lottery_name):
             )
             page = await browser.new_page()
             await page.goto(config['url'])
-            # Wait a bit for dynamic content to load (adjust if needed)
+            # Wait a bit for dynamic content to load
             await page.wait_for_timeout(3000)
             element = await page.query_selector("ul.extra-bottom.draw-balls.remove-default-styles.ball-list")
             if not element:
@@ -91,14 +92,13 @@ async def async_scrape_lottery(lottery_name):
         st.error(f"Error scraping {lottery_name}: {str(e)}")
         return None
 
+# Synchronous wrapper using ThreadPoolExecutor
 def scrape_lottery(lottery_name):
-    # Run the asynchronous function in a separate thread.
     with concurrent.futures.ThreadPoolExecutor() as executor:
         future = executor.submit(lambda: asyncio.run(async_scrape_lottery(lottery_name)))
         return future.result()
 
-
-
+# --- Update CSV and retrain model, with a check on scraped numbers ---
 def update_and_predict(lottery_name):
     """Update data and make predictions"""
     config = LOTTERY_CONFIG[lottery_name]
@@ -106,15 +106,24 @@ def update_and_predict(lottery_name):
         new_numbers = scrape_lottery(lottery_name)
         if not new_numbers:
             return False
+        # Check if the scraped numbers count matches the expected count.
+        if len(new_numbers) != config['num_numbers']:
+            st.error(f"Expected {config['num_numbers']} numbers, but got {len(new_numbers)}: {new_numbers}")
+            return False
+        
         try:
             df = pd.read_csv(config['csv'])
+            # Check if the last row already matches the scraped numbers
             if df.iloc[-1, 1:].tolist() == new_numbers:
                 st.info("No new numbers found")
                 return True
-        except:
+        except Exception as e:
+            st.write("CSV file not found or error reading CSV. Creating new DataFrame.")
             df = pd.DataFrame(columns=['Date'] + [f'W{i+1}' for i in range(config['num_numbers'])])
+        
+        # Create a new row with the current date and scraped numbers
         new_row = pd.DataFrame([[datetime.now().date()] + new_numbers],
-                                columns=df.columns)
+                               columns=df.columns)
         df = pd.concat([df, new_row])
         df.to_csv(config['csv'], index=False)
     
@@ -122,7 +131,7 @@ def update_and_predict(lottery_name):
         try:
             model = tf.keras.models.load_model(config['model'])
             model.compile(optimizer='adam', loss=tf.keras.losses.MeanSquaredError())
-        except:
+        except Exception as e:
             model = tf.keras.Sequential([
                 tf.keras.layers.Dense(64, activation='relu', input_shape=(config['num_numbers'],)),
                 tf.keras.layers.Dense(config['num_numbers'])
@@ -130,7 +139,7 @@ def update_and_predict(lottery_name):
             model.compile(optimizer='adam', loss=tf.keras.losses.MeanSquaredError())
         X = df.iloc[:, 1:].values[:-1]
         y = df.iloc[:, 1:].values[1:]
-        model.fit(X/config['max_num'], y/config['max_num'], epochs=50, verbose=0)
+        model.fit(X / config['max_num'], y / config['max_num'], epochs=50, verbose=0)
         model.save(config['model'])
     
     if lottery_name == 'Lotto Max':
@@ -139,6 +148,7 @@ def update_and_predict(lottery_name):
         st.session_state.lotto_649_state = 'Saturday' if st.session_state.lotto_649_state == 'Wednesday' else 'Wednesday'
     return True
 
+# --- Prediction generation ---
 def generate_predictions(base_prediction, config):
     """Generate multiple predictions with perturbations"""
     predictions = []
@@ -149,6 +159,7 @@ def generate_predictions(base_prediction, config):
     predictions.append(np.clip(base_prediction + perturbation, 1, config['max_num']))
     return predictions
 
+# --- Display function ---
 def display_numbers(numbers, title):
     """Display numbers in styled cards"""
     st.markdown(f"<div class='number-card'><h3>{title}</h3>", unsafe_allow_html=True)
@@ -158,9 +169,11 @@ def display_numbers(numbers, title):
             st.markdown(f"<div class='number-badge'>{num}</div>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
+# --- Main Streamlit App ---
 def main():
     st.title("Ontario Lottery Predictor")
     st.markdown("---")
+    
     tab1, tab2 = st.tabs(["Lotto Max", "Lotto 649"])
     
     with tab1:
@@ -174,7 +187,7 @@ def main():
                 df = pd.read_csv(LOTTERY_CONFIG['Lotto Max']['csv'])
                 last_numbers = df.iloc[-1, 1:].tolist()
                 display_numbers(last_numbers, "Last Draw Numbers")
-            except:
+            except Exception as e:
                 st.warning("No Lotto Max data available")
         with col2:
             try:
@@ -205,7 +218,7 @@ def main():
                 df = pd.read_csv(LOTTERY_CONFIG['Lotto 649']['csv'])
                 last_numbers = df.iloc[-1, 1:].tolist()
                 display_numbers(last_numbers, "Last Draw Numbers")
-            except:
+            except Exception as e:
                 st.warning("No Lotto 649 data available")
         with col2:
             try:
