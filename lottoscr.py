@@ -77,22 +77,42 @@ async def async_scrape_lottery(lottery_name):
             )
             page = await browser.new_page()
             await page.goto(config['url'])
-            # Wait a bit for dynamic content to load
-            await page.wait_for_timeout(3000)
+            await page.wait_for_timeout(3000)  # Wait for JavaScript to load content
+            
+            # Get the text content of the lottery numbers
             element = await page.query_selector("ul.extra-bottom.draw-balls.remove-default-styles.ball-list")
             if not element:
                 st.error("Could not locate lottery numbers element on the page.")
                 await browser.close()
                 return None
-            raw_data = await element.text_content()
+
+            # Preserve spaces while extracting text
+            raw_data = await element.inner_text()
             await browser.close()
-        numbers = re.findall(r'\d+', raw_data)[:config['num_numbers']]
-        return [int(n) for n in numbers]
+
+        # Debugging: Print raw extracted text
+        st.write(f"Raw extracted text: {raw_data}")
+
+        # Extract numbers while ensuring correct spacing
+        numbers = re.findall(r'\d+', raw_data)
+
+        # Convert to integers
+        numbers = [int(n) for n in numbers]
+
+        # Debugging: Print cleaned numbers
+        st.write(f"Cleaned extracted numbers: {numbers}")
+
+        # Ensure correct number count
+        if len(numbers) != config['num_numbers']:
+            st.error(f"Error: Expected {config['num_numbers']} numbers, but got {len(numbers)}")
+            return None
+
+        return numbers
     except Exception as e:
         st.error(f"Error scraping {lottery_name}: {str(e)}")
         return None
 
-# Synchronous wrapper using ThreadPoolExecutor
+# Synchronous wrapper for running Playwright async functions
 def scrape_lottery(lottery_name):
     with concurrent.futures.ThreadPoolExecutor() as executor:
         future = executor.submit(lambda: asyncio.run(async_scrape_lottery(lottery_name)))
