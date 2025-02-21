@@ -67,19 +67,6 @@ if 'lotto_649_state' not in st.session_state:
 
 
 
-
-def find_browser_binary():
-    possible_paths = [
-        "/usr/bin/google-chrome",
-        "/usr/bin/google-chrome-stable",
-        "/usr/bin/chromium-browser",
-        "/usr/bin/chromium"
-    ]
-    for path in possible_paths:
-        if os.path.exists(path):
-            return path
-    return None
-
 def scrape_lottery(lottery_name):
     config = LOTTERY_CONFIG[lottery_name]
     try:
@@ -89,15 +76,10 @@ def scrape_lottery(lottery_name):
         options.add_argument("--disable-dev-shm-usage")
         options.add_argument("--disable-gpu")
         
-        # Set the binary location for the browser
-        binary = find_browser_binary()
-        if binary is None:
-            st.error("No Chrome/Chromium binary found in the expected paths.")
-            return None
-        options.binary_location = binary
-        print("Using browser binary at:", binary)
-
-        # Force a specific ChromeDriver version (adjust if needed)
+        # Remove the binary_location line to use the system PATH
+        # options.binary_location = "/usr/bin/chromium-browser"
+        
+        # Force a specific ChromeDriver version (if needed)
         chromedriver_path = ChromeDriverManager(version="113.0.5672.63").install()
         print("Using ChromeDriver at:", chromedriver_path)
         os.chmod(chromedriver_path, 0o755)
@@ -105,10 +87,10 @@ def scrape_lottery(lottery_name):
         
         driver = webdriver.Chrome(service=service, options=options)
         driver.get(config['url'])
-        time.sleep(3)  # Wait for page load
+        time.sleep(3)
         
-        raw_data = driver.find_element(By.CSS_SELECTOR,
-                    "ul.extra-bottom.draw-balls.remove-default-styles.ball-list").text
+        raw_data = driver.find_element(By.CSS_SELECTOR, 
+                      "ul.extra-bottom.draw-balls.remove-default-styles.ball-list").text
         driver.quit()
         
         numbers = re.findall(r'\d+', raw_data)[:config['num_numbers']]
