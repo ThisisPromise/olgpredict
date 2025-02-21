@@ -219,7 +219,7 @@ def generate_predictions(base_prediction, config):
     predictions.append(np.clip(base_prediction + perturbation, 1, config['max_num']))
     return predictions
 
---- Display function ---
+# --- Display function ---
 def display_numbers(numbers, title):
     """Display numbers in a horizontal row on mobile"""
     st.markdown(f"""
