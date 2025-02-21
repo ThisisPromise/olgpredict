@@ -275,23 +275,7 @@ def main():
     st.markdown("---")
     st.markdown("**Note:** Predictions are based on historical patterns and should not be considered financial advice")
 
-screenshot_js = """
-    <script>
-    function takeScreenshot() {
-        html2canvas(document.body).then(canvas => {
-            let link = document.createElement('a');
-            link.href = canvas.toDataURL();
-            link.download = 'screenshot.png';
-            link.click();
-        });
-    }
-    </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <button onclick="takeScreenshot()" style="padding: 10px; font-size: 16px; cursor: pointer; background-color: #1E88E5; color: white; border: none; border-radius: 5px;">Download Screenshot</button>
-"""
 
-# Display button using Streamlit's markdown
-st.markdown(screenshot_js, unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
