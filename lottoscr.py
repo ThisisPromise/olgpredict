@@ -10,6 +10,7 @@ import re
 import requests
 from requests_html import HTMLSession
 from bs4 import BeautifulSoup
+import asyncio
 
 tf.config.run_functions_eagerly(True)
 
@@ -66,13 +67,22 @@ def scrape_lottery(lottery_name):
     try:
         session = HTMLSession()
         response = session.get(config['url'])
-        # Render the page; adjust timeout and sleep if needed
+        
+        # Create and set a new event loop in the current thread
+        try:
+            loop = asyncio.get_event_loop()
+        except RuntimeError:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+        
+        # Use the event loop for rendering
         response.html.render(timeout=20, sleep=2)
         
         element = response.html.find("ul.extra-bottom.draw-balls.remove-default-styles.ball-list", first=True)
         if not element:
             st.error("Could not locate lottery numbers element on the page.")
             return None
+        
         raw_data = element.text
         numbers = re.findall(r'\d+', raw_data)[:config['num_numbers']]
         return [int(n) for n in numbers]
