@@ -60,15 +60,7 @@ st.markdown("""
     line-height: 25px;
     margin: 5px;
 }
-@media (max-width: 768px) {
-                .mobile-view { display: flex; flex-wrap: wrap; justify-content: center; }
-                .desktop-view { display: none; }
-            }
-            /* Desktop view (show columns, hide flex row) */
-            @media (min-width: 769px) {
-                .mobile-view { display: none; }
-                .desktop-view { display: flex; justify-content: center; }
-            }
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -226,11 +218,11 @@ def generate_predictions(base_prediction, config):
 
 def display_numbers(numbers, title):
     """Display numbers in styled cards"""
-    st.markdown(f"<div class='number-card mobile-view'><h3>{title}</h3>", unsafe_allow_html=True)
+    st.markdown(f"<div class='number-card'><h3>{title}</h3>", unsafe_allow_html=True)
     cols = st.columns(len(numbers))
     for col, num in zip(cols, numbers):
         with col:
-            st.markdown(f"<div class='number-badge desktop-view'>{num}</div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='number-badge'>{num}</div>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
 def display_real_time_date():
