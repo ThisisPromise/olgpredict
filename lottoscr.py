@@ -220,16 +220,8 @@ def main():
 
     display_real_time_date()
     
-    # Add button for image download
-    if st.button("Download Full-Screen Image"):
-        image = generate_image_from_content()
-        img_buffer = save_image_for_download(image)
-        st.download_button(
-            label="Download Image",
-            data=img_buffer,
-            file_name="screenshot.png",
-            mime="image/png"
-        )
+
+
 
 
     
