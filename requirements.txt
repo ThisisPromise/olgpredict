@@ -22,3 +22,4 @@ pyppeteer
 lxml_html_clean
 nest_asyncio
 playwright
+pillow
