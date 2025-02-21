@@ -62,16 +62,7 @@ st.markdown("""
         margin: 5px;
         font-weight: bold;
     }
-    /* Mobile view - Flex Row */
-    @media (max-width: 768px) {
-        .mobile-view { display: flex; flex-wrap: wrap; justify-content: center; }
-        .desktop-view { display: none; }
-    }
-    /* Desktop view - Columns */
-    @media (min-width: 769px) {
-        .mobile-view { display: none; }
-        .desktop-view { display: flex; justify-content: center; }
-    }
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -212,21 +203,10 @@ def generate_predictions(base_prediction, config):
 # --- Display function ---
 
 
+
 def display_numbers(numbers, title):
-    """Display numbers in styled cards with responsiveness"""
-
-    # Mobile View - Flexbox Row
-    st.markdown(f"""
-    <div class='number-card mobile-view'>
-        <h3>{title}</h3>
-        <div style="display: flex; flex-wrap: wrap; justify-content: center;">
-            {''.join(f'<div class="number-badge">{num}</div>' for num in numbers)}
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    # Desktop View - Columns
-    st.markdown(f"<div class='number-card desktop-view'><h3>{title}</h3>", unsafe_allow_html=True)
+    """Display numbers in styled cards"""
+    st.markdown(f"<div class='number-card'><h3>{title}</h3>", unsafe_allow_html=True)
     cols = st.columns(len(numbers))
     for col, num in zip(cols, numbers):
         with col:
