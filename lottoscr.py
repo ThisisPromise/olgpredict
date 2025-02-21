@@ -12,6 +12,8 @@ from bs4 import BeautifulSoup
 import asyncio
 import concurrent.futures
 from playwright.async_api import async_playwright
+from PIL import Image
+import io
 
 
 
@@ -207,10 +209,45 @@ def display_numbers(numbers, title):
             st.markdown(f"<div class='number-badge'>{num}</div>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
+def display_real_time_date():
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    st.write(f"**Current Date and Time:** {current_time}")
+
+# Function to generate an image from the current content (for demonstration)
+def generate_image_from_content():
+    # Create a simple image with PIL (You can replace it with a more complex image generation logic)
+    img = Image.new('RGB', (300, 100), color = (73, 109, 137))
+    d = ImageDraw.Draw(img)
+    d.text((10,10), "Your Full-Screen Content", fill=(255, 255, 0))
+    return img
+
+# Function to save image as a downloadable link
+def save_image_for_download(image):
+    # Save the image into a BytesIO object
+    buf = io.BytesIO()
+    image.save(buf, format="PNG")
+    buf.seek(0)
+    return buf
+
 # --- Main Streamlit App ---
 def main():
     st.title("Ontario Lottery Predictor")
     st.markdown("---")
+
+    display_real_time_date()
+    
+    # Add button for image download
+    if st.button("Download Full-Screen Image"):
+        image = generate_image_from_content()
+        img_buffer = save_image_for_download(image)
+        st.download_button(
+            label="Download Image",
+            data=img_buffer,
+            file_name="screenshot.png",
+            mime="image/png"
+        )
+
+
     
     tab1, tab2 = st.tabs(["Lotto Max", "Lotto 649"])
     
@@ -281,8 +318,6 @@ def main():
     st.markdown("**Note:** Predictions are based on historical patterns and should not be considered financial advice")
 
 
-    def display_real_time_date():
-    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    st.write(f"**Current Date and Time:** {current_time}")
+
 if __name__ == "__main__":
     main()
