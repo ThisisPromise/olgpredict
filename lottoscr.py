@@ -75,20 +75,22 @@ def scrape_lottery(lottery_name):
         options.add_argument("--headless")
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
-        # Set the browser binary location (adjust if necessary)
-        options.binary_location = "/usr/bin/chromium"  # or try "/usr/bin/chromium"
+        options.add_argument("--disable-gpu")
+        # Try different binary locations if needed:
+        options.binary_location = "/usr/bin/chromium-browser"  # or "/usr/bin/chromium" or "/usr/bin/google-chrome"
 
-        # Force a specific ChromeDriver version that matches your installed browser version
+        # Force a specific ChromeDriver version:
         chromedriver_path = ChromeDriverManager(version="113.0.5672.63").install()
+        print("Using ChromeDriver at:", chromedriver_path)
         os.chmod(chromedriver_path, 0o755)
         service = Service(chromedriver_path)
         
         driver = webdriver.Chrome(service=service, options=options)
         driver.get(config['url'])
-        time.sleep(3)  # Wait for page load
+        time.sleep(3)
         
-        raw_data = driver.find_element(By.CSS_SELECTOR,
-            "ul.extra-bottom.draw-balls.remove-default-styles.ball-list").text
+        raw_data = driver.find_element(By.CSS_SELECTOR, 
+                    "ul.extra-bottom.draw-balls.remove-default-styles.ball-list").text
         driver.quit()
         
         numbers = re.findall(r'\d+', raw_data)[:config['num_numbers']]
