@@ -76,11 +76,9 @@ def scrape_lottery(lottery_name):
         options.add_argument("--disable-dev-shm-usage")
         options.add_argument("--disable-gpu")
         
-        # Remove the binary_location line to use the system PATH
-        # options.binary_location = "/usr/bin/chromium-browser"
-        
-        # Force a specific ChromeDriver version (if needed)
-        chromedriver_path = ChromeDriverManager().install()
+   
+        chromedriver_path = ChromeDriverManager(version="120.0.6099.224").install()
+
         print("Using ChromeDriver at:", chromedriver_path)
         os.chmod(chromedriver_path, 0o755)
         service = Service(chromedriver_path)
