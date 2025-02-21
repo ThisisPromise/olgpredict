@@ -62,7 +62,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 if 'lotto_max_state' not in st.session_state:
-    st.session_state.lotto_max_state = 'Friday'
+    st.session_state.lotto_max_state = 'Tuesday'
 if 'lotto_649_state' not in st.session_state:
     st.session_state.lotto_649_state = 'Wednesday'
 
@@ -176,7 +176,7 @@ def update_and_predict(lottery_name):
         model.save(config['model'])
 
     if lottery_name == 'Lotto Max':
-        st.session_state.lotto_max_state = 'Tuesday' if st.session_state.lotto_max_state == 'Friday' else 'Friday'
+        st.session_state.lotto_max_state = 'Friday' if st.session_state.lotto_max_state == 'Tuesday' else 'Tuesday'
     elif lottery_name == 'Lotto 649':
         st.session_state.lotto_649_state = 'Saturday' if st.session_state.lotto_649_state == 'Wednesday' else 'Wednesday'
 
