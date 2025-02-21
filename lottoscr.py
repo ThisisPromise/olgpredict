@@ -11,7 +11,10 @@ import requests
 from bs4 import BeautifulSoup
 os.system('playwright install')
 os.system('playwright install-deps')
-from playwright.sync_api import sync_playwright
+import asyncio
+import concurrent.futures
+import streamlit as st
+from playwright.async_api import async_playwright
 
 
 tf.config.run_functions_eagerly(True)
@@ -63,27 +66,37 @@ if 'lotto_649_state' not in st.session_state:
 
 
 
-def scrape_lottery(lottery_name):
+async def async_scrape_lottery(lottery_name):
     config = LOTTERY_CONFIG[lottery_name]
     try:
-        with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True, args=["--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu"])
-            page = browser.new_page()
-            page.goto(config['url'])
-            page.wait_for_timeout(3000)  # wait 3 seconds for page load
-            element = page.query_selector("ul.extra-bottom.draw-balls.remove-default-styles.ball-list")
+        async with async_playwright() as p:
+            browser = await p.chromium.launch(
+                headless=True,
+                args=["--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu"]
+            )
+            page = await browser.new_page()
+            await page.goto(config['url'])
+            # Wait a bit for dynamic content to load (adjust if needed)
+            await page.wait_for_timeout(3000)
+            element = await page.query_selector("ul.extra-bottom.draw-balls.remove-default-styles.ball-list")
             if not element:
                 st.error("Could not locate lottery numbers element on the page.")
-                browser.close()
+                await browser.close()
                 return None
-            raw_data = element.text_content()
-            browser.close()
-        
+            raw_data = await element.text_content()
+            await browser.close()
         numbers = re.findall(r'\d+', raw_data)[:config['num_numbers']]
         return [int(n) for n in numbers]
     except Exception as e:
         st.error(f"Error scraping {lottery_name}: {str(e)}")
         return None
+
+def scrape_lottery(lottery_name):
+    # Run the asynchronous function in a separate thread.
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        future = executor.submit(lambda: asyncio.run(async_scrape_lottery(lottery_name)))
+        return future.result()
+
 
 
 def update_and_predict(lottery_name):
