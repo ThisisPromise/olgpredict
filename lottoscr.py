@@ -114,9 +114,6 @@ async def async_scrape_lottery(lottery_name):
         st.error(f"Error scraping {lottery_name}: {str(e)}")
         return None
         
-def display_real_time_date():
-    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    st.write(f"**Current Date and Time:** {current_time}")
 
 
 # Synchronous wrapper for running Playwright async functions
@@ -278,11 +275,14 @@ def main():
                     display_numbers(pred, label)
             except Exception as e:
                 st.warning(f"Prediction not available: {str(e)}")
-    
+
+
     st.markdown("---")
     st.markdown("**Note:** Predictions are based on historical patterns and should not be considered financial advice")
 
 
-
+    def display_real_time_date():
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    st.write(f"**Current Date and Time:** {current_time}")
 if __name__ == "__main__":
     main()
