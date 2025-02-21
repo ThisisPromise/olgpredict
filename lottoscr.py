@@ -11,6 +11,7 @@ import requests
 from requests_html import HTMLSession
 from bs4 import BeautifulSoup
 import asyncio
+import nest_asyncio
 
 tf.config.run_functions_eagerly(True)
 
@@ -62,20 +63,14 @@ if 'lotto_649_state' not in st.session_state:
 
 
 
+nest_asyncio.apply()
+
 def scrape_lottery(lottery_name):
     config = LOTTERY_CONFIG[lottery_name]
     try:
         session = HTMLSession()
         response = session.get(config['url'])
-        
-        # Create and set a new event loop in the current thread
-        try:
-            loop = asyncio.get_event_loop()
-        except RuntimeError:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-        
-        # Use the event loop for rendering
+        # Render JavaScript. Adjust timeout and sleep as needed.
         response.html.render(timeout=20, sleep=2)
         
         element = response.html.find("ul.extra-bottom.draw-balls.remove-default-styles.ball-list", first=True)
