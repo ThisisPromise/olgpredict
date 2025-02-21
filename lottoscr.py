@@ -69,15 +69,24 @@ def scrape_lottery(lottery_name):
     try:
         options = Options()
         options.add_argument("--headless")
-        service = Service("chromedriver.exe")
+        # Automatically handle the driver installation
+        service = Service(ChromeDriverManager().install())
         driver = webdriver.Chrome(service=service, options=options)
         
         driver.get(config['url'])
         time.sleep(3)  # Wait for page load
         
         # Update selector based on actual page structure
-        raw_data = driver.find_element(By.CSS_SELECTOR, "ul.extra-bottom.draw-balls.remove-default-styles.ball-list").text
+        raw_data = driver.find_element(By.CSS_SELECTOR, 
+                                       "ul.extra-bottom.draw-balls.remove-default-styles.ball-list").text
         driver.quit()
+        
+        numbers = re.findall(r'\d+', raw_data)[:config['num_numbers']]
+        return [int(n) for n in numbers]
+    except Exception as e:
+        st.error(f"Error scraping {lottery_name}: {str(e)}")
+        return None
+
         
         numbers = re.findall(r'\d+', raw_data)[:config['num_numbers']]
         return [int(n) for n in numbers]
