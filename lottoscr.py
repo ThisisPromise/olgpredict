@@ -87,12 +87,6 @@ def scrape_lottery(lottery_name):
         st.error(f"Error scraping {lottery_name}: {str(e)}")
         return None
 
-        
-        numbers = re.findall(r'\d+', raw_data)[:config['num_numbers']]
-        return [int(n) for n in numbers]
-    except Exception as e:
-        st.error(f"Error scraping {lottery_name}: {str(e)}")
-        return None
 
 def update_and_predict(lottery_name):
     """Update data and make predictions"""
