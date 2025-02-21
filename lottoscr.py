@@ -13,6 +13,10 @@ import asyncio
 import concurrent.futures
 from playwright.async_api import async_playwright
 
+def display_real_time_date():
+    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    st.write(f"**Current Date and Time:** {current_time}")
+
 # Ensure that the Playwright browsers and dependencies are installed
 os.system('playwright install')
 os.system('playwright install-deps')
