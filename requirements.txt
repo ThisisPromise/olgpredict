@@ -19,3 +19,4 @@ beautifulsoup4
 requests-html
 lxml
 pyppeteer
+lxml_html_clean
