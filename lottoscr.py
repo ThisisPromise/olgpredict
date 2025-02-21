@@ -199,8 +199,15 @@ def generate_predictions(base_prediction, config):
 
 # --- Display function ---
 def display_numbers(numbers, title):
-    """Display numbers in styled cards"""
-    st.markdown(f"<div class='number-card'><h3>{title}</h3>", unsafe_allow_html=True)
+    """Display numbers in a horizontal row on mobile"""
+    st.markdown(f"""
+    <div class='number-card'>
+        <h3>{title}</h3>
+        <div style="display: flex; flex-wrap: wrap; justify-content: center;">
+            {''.join(f'<div class="number-badge">{num}</div>' for num in numbers)}
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
     cols = st.columns(len(numbers))
     for col, num in zip(cols, numbers):
         with col:
