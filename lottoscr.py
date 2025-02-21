@@ -62,9 +62,9 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 if 'lotto_max_state' not in st.session_state:
-    st.session_state.lotto_max_state = 'Tuesday'
+    st.session_state.lotto_max_state = 'Friday'
 if 'lotto_649_state' not in st.session_state:
-    st.session_state.lotto_649_state = 'Wednesday'
+    st.session_state.lotto_649_state = 'Saturday'
 
 # --- Asynchronous Playwright scraping function ---
 async def async_scrape_lottery(lottery_name):
@@ -176,9 +176,9 @@ def update_and_predict(lottery_name):
         model.save(config['model'])
 
     if lottery_name == 'Lotto Max':
-        st.session_state.lotto_max_state = 'Friday' if st.session_state.lotto_max_state == 'Tuesday' else 'Tuesday'
+        st.session_state.lotto_max_state = 'Tuesday' if st.session_state.lotto_max_state == 'Friday' else 'Friday'
     elif lottery_name == 'Lotto 649':
-        st.session_state.lotto_649_state = 'Saturday' if st.session_state.lotto_649_state == 'Wednesday' else 'Wednesday'
+        st.session_state.lotto_649_state = 'Wednesday' if st.session_state.lotto_649_state == 'Saturday' else 'Saturday'
 
     return True
 
