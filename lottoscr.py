@@ -41,48 +41,34 @@ LOTTERY_CONFIG = {
 }
 
 # Custom CSS for number display
-# st.markdown("""
-# <style>
-# .number-card {
-#     padding: 10px;
-#     border-radius: 10px;
-#     margin: 10px;
-#     box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
-# }
-# .number-badge {
-#     display: inline-block;
-#     width: 30px;
-#     height: 30px;
-#     border-radius: 50%;
-#     background: #1E88E5;
-#     color: white;
-#     text-align: center;
-#     line-height: 25px;
-#     margin: 5px;
-# }
-
 st.markdown("""
 <style>
-            .number-card { text-align: center; margin-bottom: 10px; }
-            .number-badge { 
-                background: #f1f1f1; 
-                padding: 10px; 
-                margin: 5px; 
-                border-radius: 5px;
-                font-size: 18px;
-            }
-            /* Mobile view (show flex row, hide columns) */
-            @media (max-width: 768px) {
-                .mobile-view { display: flex; flex-wrap: wrap; justify-content: center; }
-                .desktop-view { display: none; }
-            }
-            /* Desktop view (show columns, hide flex row) */
-            @media (min-width: 769px) {
-                .mobile-view { display: none; }
-                .desktop-view { display: flex; justify-content: center; }
-            }
-        </style>
-</style>
+.number-card {
+    padding: 10px;
+    border-radius: 10px;
+    margin: 10px;
+    text-align: center;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+}
+.number-badge {
+    display: inline-block;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #1E88E5;
+    color: white;
+    text-align: center;
+    line-height: 25px;
+    margin: 5px;
+}
+@media (max-width: 768px) {
+    .mobile-view { display: flex; flex-wrap: wrap; justify-content: center; }
+    .desktop-view { display: none; }
+    }
+@media (min-width: 769px) {
+    .mobile-view { display: none; }
+    .desktop-view { display: flex; justify-content: center; }
+    }
 """, unsafe_allow_html=True)
 
 if 'lotto_max_state' not in st.session_state:
