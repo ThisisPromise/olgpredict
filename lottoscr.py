@@ -207,21 +207,30 @@ def generate_predictions(base_prediction, config):
     return predictions
 
 # --- Display function ---
-def display_numbers(numbers, title):
-    """Display numbers in a horizontal row on mobile"""
-    st.markdown(f"""
-    <div class='number-card mobile-view'>
-        <h3>{title}</h3>
-        <div style="display: flex; flex-wrap: wrap; justify-content: center;">
-            {''.join(f'<div class="number-badge">{num}</div>' for num in numbers)}
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+# def display_numbers(numbers, title):
+#     """Display numbers in a horizontal row on mobile"""
+#     st.markdown(f"""
+#     <div class='number-card mobile-view'>
+#         <h3>{title}</h3>
+#         <div style="display: flex; flex-wrap: wrap; justify-content: center;">
+#             {''.join(f'<div class="number-badge">{num}</div>' for num in numbers)}
+#         </div>
+#     </div>
+#     """, unsafe_allow_html=True)
            
+#     cols = st.columns(len(numbers))
+#     for col, num in zip(cols, numbers):
+#         with col:
+#              st.markdown(f"<div class='number-badge desktop-view'>{num}</div>", unsafe_allow_html=True)
+#     st.markdown("</div>", unsafe_allow_html=True)
+
+def display_numbers(numbers, title):
+    """Display numbers in styled cards"""
+    st.markdown(f"<div class='number-card mobile-view'><h3>{title}</h3>", unsafe_allow_html=True)
     cols = st.columns(len(numbers))
     for col, num in zip(cols, numbers):
         with col:
-             st.markdown(f"<div class='number-badge desktop-view'>{num}</div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='number-badge desktop-view'>{num}</div>", unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 
 def display_real_time_date():
