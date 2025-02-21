@@ -1,22 +1,14 @@
-
 import streamlit as st
 import pandas as pd
 import numpy as np
 import tensorflow as tf
 from datetime import datetime
 import time
-import schedule
-import os
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.options import Options
-from webdriver_manager.chrome import ChromeDriverManager
 import re
-
+import requests
+from bs4 import BeautifulSoup
 
 tf.config.run_functions_eagerly(True)
-
 
 LOTTERY_CONFIG = {
     'Lotto Max': {
@@ -54,49 +46,34 @@ st.markdown("""
     text-align: center;
     line-height: 25px;
     margin: 5px;
-
 }
 </style>
 """, unsafe_allow_html=True)
 
-
 if 'lotto_max_state' not in st.session_state:
-    st.session_state.lotto_max_state = 'Tuesday'  
+    st.session_state.lotto_max_state = 'Tuesday'
 if 'lotto_649_state' not in st.session_state:
-    st.session_state.lotto_649_state = 'Wednesday'  
-
-
+    st.session_state.lotto_649_state = 'Wednesday'
 
 def scrape_lottery(lottery_name):
     config = LOTTERY_CONFIG[lottery_name]
     try:
-        options = Options()
-        options.add_argument("--headless")
-        options.add_argument("--no-sandbox")
-        options.add_argument("--disable-dev-shm-usage")
-        options.add_argument("--disable-gpu")
+        response = requests.get(config['url'])
+        response.raise_for_status()
+        soup = BeautifulSoup(response.text, 'html.parser')
         
-   
-        chromedriver_path = ChromeDriverManager(version="20.0.6099.224" ).install()
-
-        print("Using ChromeDriver at:", chromedriver_path)
-        os.chmod(chromedriver_path, 0o755)
-        service = Service(chromedriver_path)
+        # Extract numbers from the HTML
+        numbers_container = soup.find("ul", class_="extra-bottom draw-balls remove-default-styles ball-list")
+        if not numbers_container:
+            st.error(f"Could not find numbers container for {lottery_name}")
+            return None
         
-        driver = webdriver.Chrome(service=service, options=options)
-        driver.get(config['url'])
-        time.sleep(3)
-        
-        raw_data = driver.find_element(By.CSS_SELECTOR, 
-                      "ul.extra-bottom.draw-balls.remove-default-styles.ball-list").text
-        driver.quit()
-        
+        raw_data = numbers_container.text
         numbers = re.findall(r'\d+', raw_data)[:config['num_numbers']]
         return [int(n) for n in numbers]
     except Exception as e:
         st.error(f"Error scraping {lottery_name}: {str(e)}")
         return None
-
 
 def update_and_predict(lottery_name):
     """Update data and make predictions"""
@@ -138,7 +115,6 @@ def update_and_predict(lottery_name):
                 epochs=50, verbose=0)
         model.save(config['model'])
     
-  
     if lottery_name == 'Lotto Max':
         st.session_state.lotto_max_state = 'Friday' if st.session_state.lotto_max_state == 'Tuesday' else 'Tuesday'
     elif lottery_name == 'Lotto 649':
@@ -147,20 +123,19 @@ def update_and_predict(lottery_name):
     return True
 
 def generate_predictions(base_prediction, config):
-     """Generate multiple predictions with perturbations"""
-     predictions = []
+    """Generate multiple predictions with perturbations"""
+    predictions = []
+    predictions.append(np.clip(base_prediction, 1, config['max_num']))
     
-     predictions.append(np.clip(base_prediction, 1, config['max_num']))
+    perturbation = np.random.randint(-2, 3, size=config['num_numbers'])
+    better_pred = base_prediction + perturbation
+    predictions.append(np.clip(better_pred, 1, config['max_num']))
     
-     perturbation = np.random.randint(-2, 3, size=config['num_numbers'])
-     better_pred = base_prediction + perturbation
-     predictions.append(np.clip(better_pred, 1, config['max_num']))
+    perturbation = np.random.randint(-3, 4, size=config['num_numbers'])
+    good_pred = base_prediction + perturbation
+    predictions.append(np.clip(good_pred, 1, config['max_num']))
     
-     perturbation = np.random.randint(-3, 4, size=config['num_numbers'])
-     good_pred = base_prediction + perturbation
-     predictions.append(np.clip(good_pred, 1, config['max_num']))
-    
-     return predictions
+    return predictions
 
 def display_numbers(numbers, title):
     """Display numbers in styled cards"""
@@ -175,7 +150,6 @@ def main():
     st.title("Ontario Lottery Predictor")
     st.markdown("---")
     
-    #
     tab1, tab2 = st.tabs(["Lotto Max", "Lotto 649"])
     
     with tab1:
@@ -197,7 +171,6 @@ def main():
             try:
                 model = tf.keras.models.load_model(LOTTERY_CONFIG['Lotto Max']['model'])
                 
-            
                 if len(df) < 10:
                     st.warning("Not enough data to make a prediction")
                     return
@@ -236,7 +209,6 @@ def main():
             try:
                 model = tf.keras.models.load_model(LOTTERY_CONFIG['Lotto 649']['model'])
                 
-               
                 if len(df) < 10:
                     st.warning("Not enough data to make a prediction")
                     return
@@ -254,7 +226,7 @@ def main():
                     display_numbers(pred, label)
                     
             except Exception as e:
-             st.warning(f"Prediction not available: {str(e)}")
+                st.warning(f"Prediction not available: {str(e)}")
     
     st.markdown("---")
     st.markdown("**Note:** Predictions are based on historical patterns and should not be considered financial advice")
