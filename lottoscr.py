@@ -60,6 +60,7 @@ st.markdown("""
     text-align: center;
     line-height: 25px;
     margin: 5px;
+    padding: 10px;
 }
 @media (max-width: 768px) {
     .mobile-view { display: flex; flex-wrap: wrap; justify-content: center; }
