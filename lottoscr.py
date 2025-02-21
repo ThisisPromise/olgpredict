@@ -14,10 +14,10 @@ from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 import re
 
-# Enable eager execution in TensorFlow
+
 tf.config.run_functions_eagerly(True)
 
-# Configuration
+
 LOTTERY_CONFIG = {
     'Lotto Max': {
         'url': 'https://www.olg.ca/en/lottery/play-lotto-max-encore/past-results.html',
@@ -59,11 +59,11 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Initialize session state for prediction states
+
 if 'lotto_max_state' not in st.session_state:
-    st.session_state.lotto_max_state = 'Tuesday'  # Initial state for Lotto Max
+    st.session_state.lotto_max_state = 'Tuesday'  
 if 'lotto_649_state' not in st.session_state:
-    st.session_state.lotto_649_state = 'Wednesday'  # Initial state for Lotto 649
+    st.session_state.lotto_649_state = 'Wednesday'  
 
 
 
@@ -77,7 +77,7 @@ def scrape_lottery(lottery_name):
         options.add_argument("--disable-gpu")
         
    
-        chromedriver_path = ChromeDriverManager(version="120.0.6099.224").install()
+        chromedriver_path = ChromeDriverManager().install()
 
         print("Using ChromeDriver at:", chromedriver_path)
         os.chmod(chromedriver_path, 0o755)
@@ -138,7 +138,7 @@ def update_and_predict(lottery_name):
                 epochs=50, verbose=0)
         model.save(config['model'])
     
-    # Toggle the prediction state
+  
     if lottery_name == 'Lotto Max':
         st.session_state.lotto_max_state = 'Friday' if st.session_state.lotto_max_state == 'Tuesday' else 'Tuesday'
     elif lottery_name == 'Lotto 649':
@@ -175,7 +175,7 @@ def main():
     st.title("Ontario Lottery Predictor")
     st.markdown("---")
     
-    # Create tabs for different lotteries
+    #
     tab1, tab2 = st.tabs(["Lotto Max", "Lotto 649"])
     
     with tab1:
@@ -197,7 +197,7 @@ def main():
             try:
                 model = tf.keras.models.load_model(LOTTERY_CONFIG['Lotto Max']['model'])
                 
-                # Ensure there are at least 10 draws to use for prediction
+            
                 if len(df) < 10:
                     st.warning("Not enough data to make a prediction")
                     return
@@ -236,7 +236,7 @@ def main():
             try:
                 model = tf.keras.models.load_model(LOTTERY_CONFIG['Lotto 649']['model'])
                 
-                # Ensure there are at least 10 draws to use for prediction
+               
                 if len(df) < 10:
                     st.warning("Not enough data to make a prediction")
                     return
