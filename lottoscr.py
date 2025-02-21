@@ -66,14 +66,13 @@ def scrape_lottery(lottery_name):
     try:
         session = HTMLSession()
         response = session.get(config['url'])
-        # Render JavaScript – you might adjust sleep time or wait conditions
-        response.html.render(timeout=20)
+        # Render the page; adjust timeout and sleep if needed
+        response.html.render(timeout=20, sleep=2)
         
         element = response.html.find("ul.extra-bottom.draw-balls.remove-default-styles.ball-list", first=True)
         if not element:
             st.error("Could not locate lottery numbers element on the page.")
             return None
-        
         raw_data = element.text
         numbers = re.findall(r'\d+', raw_data)[:config['num_numbers']]
         return [int(n) for n in numbers]
