@@ -98,54 +98,68 @@ def scrape_lottery(lottery_name):
         future = executor.submit(lambda: asyncio.run(async_scrape_lottery(lottery_name)))
         return future.result()
 
-# --- Update CSV and retrain model, with a check on scraped numbers ---
+
 def update_and_predict(lottery_name):
     """Update data and make predictions"""
     config = LOTTERY_CONFIG[lottery_name]
+    
     with st.spinner(f"Updating {lottery_name} data..."):
         new_numbers = scrape_lottery(lottery_name)
-        if not new_numbers:
-            return False
-        # Check if the scraped numbers count matches the expected count.
-        if len(new_numbers) != config['num_numbers']:
-            st.error(f"Expected {config['num_numbers']} numbers, but got {len(new_numbers)}: {new_numbers}")
-            return False
         
+        # Debug: Print scraped numbers
+        st.write(f"Scraped numbers for {lottery_name}: {new_numbers} (Expected: {config['num_numbers']})")
+
+        if not new_numbers or len(new_numbers) != config['num_numbers']:
+            st.error(f"Error: Expected {config['num_numbers']} numbers, but got {len(new_numbers) if new_numbers else 'None'}")
+            return False
+
         try:
             df = pd.read_csv(config['csv'])
+            st.write(f"Loaded CSV successfully. Columns: {df.columns.tolist()}")
+            
             # Check if the last row already matches the scraped numbers
             if df.iloc[-1, 1:].tolist() == new_numbers:
                 st.info("No new numbers found")
                 return True
         except Exception as e:
-            st.write("CSV file not found or error reading CSV. Creating new DataFrame.")
+            st.write(f"CSV file not found or error reading CSV: {e}. Creating new DataFrame.")
             df = pd.DataFrame(columns=['Date'] + [f'W{i+1}' for i in range(config['num_numbers'])])
-        
-        # Create a new row with the current date and scraped numbers
-        new_row = pd.DataFrame([[datetime.now().date()] + new_numbers],
-                               columns=df.columns)
-        df = pd.concat([df, new_row])
+
+        # **Ensure Correct Data Alignment Before Adding New Row**
+        try:
+            new_row_data = [datetime.now().date()] + new_numbers
+            st.write(f"New row data: {new_row_data} (Expected {len(df.columns)} columns)")
+
+            new_row = pd.DataFrame([new_row_data], columns=df.columns)
+        except ValueError as e:
+            st.error(f"ValueError while creating new DataFrame row: {e}")
+            return False
+
+        df = pd.concat([df, new_row], ignore_index=True)
         df.to_csv(config['csv'], index=False)
-    
+
     with st.spinner("Retraining model..."):
         try:
             model = tf.keras.models.load_model(config['model'])
             model.compile(optimizer='adam', loss=tf.keras.losses.MeanSquaredError())
         except Exception as e:
+            st.warning(f"Model loading failed: {e}. Creating a new model.")
             model = tf.keras.Sequential([
                 tf.keras.layers.Dense(64, activation='relu', input_shape=(config['num_numbers'],)),
                 tf.keras.layers.Dense(config['num_numbers'])
             ])
             model.compile(optimizer='adam', loss=tf.keras.losses.MeanSquaredError())
+
         X = df.iloc[:, 1:].values[:-1]
         y = df.iloc[:, 1:].values[1:]
         model.fit(X / config['max_num'], y / config['max_num'], epochs=50, verbose=0)
         model.save(config['model'])
-    
+
     if lottery_name == 'Lotto Max':
         st.session_state.lotto_max_state = 'Friday' if st.session_state.lotto_max_state == 'Tuesday' else 'Tuesday'
     elif lottery_name == 'Lotto 649':
         st.session_state.lotto_649_state = 'Saturday' if st.session_state.lotto_649_state == 'Wednesday' else 'Wednesday'
+
     return True
 
 # --- Prediction generation ---
