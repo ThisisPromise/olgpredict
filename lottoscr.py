@@ -9,7 +9,10 @@ import os
 import re
 import requests
 from bs4 import BeautifulSoup
+os.system('playwright install')
+os.system('playwright install-deps')
 from playwright.sync_api import sync_playwright
+
 
 tf.config.run_functions_eagerly(True)
 
