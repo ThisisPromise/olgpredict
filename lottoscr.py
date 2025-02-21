@@ -8,13 +8,8 @@ import schedule
 import os
 import re
 import requests
-from requests_html import HTMLSession
 from bs4 import BeautifulSoup
-import asyncio
-import nest_asyncio
-os.environ["PYPPETEER_NO_SIGNALS"] = "1"
 
-nest_asyncio.apply()
 tf.config.run_functions_eagerly(True)
 
 LOTTERY_CONFIG = {
@@ -62,30 +57,25 @@ if 'lotto_max_state' not in st.session_state:
 if 'lotto_649_state' not in st.session_state:
     st.session_state.lotto_649_state = 'Wednesday'
 
-
-
-
-
 def scrape_lottery(lottery_name):
+    """Scrape lottery numbers using requests and BeautifulSoup"""
     config = LOTTERY_CONFIG[lottery_name]
     try:
-        session = HTMLSession()
-        response = session.get(config['url'])
-        # Render JavaScript. Adjust timeout and sleep as needed.
-        response.html.render(timeout=20, sleep=2)
-        
-        element = response.html.find("ul.extra-bottom.draw-balls.remove-default-styles.ball-list", first=True)
+        response = requests.get(config['url'])
+        if response.status_code != 200:
+            st.error(f"Failed to fetch page, status code: {response.status_code}")
+            return None
+        soup = BeautifulSoup(response.text, 'html.parser')
+        element = soup.select_one("ul.extra-bottom.draw-balls.remove-default-styles.ball-list")
         if not element:
             st.error("Could not locate lottery numbers element on the page.")
             return None
-        
-        raw_data = element.text
+        raw_data = element.get_text(separator=" ", strip=True)
         numbers = re.findall(r'\d+', raw_data)[:config['num_numbers']]
         return [int(n) for n in numbers]
     except Exception as e:
         st.error(f"Error scraping {lottery_name}: {str(e)}")
         return None
-
 
 def update_and_predict(lottery_name):
     """Update data and make predictions"""
