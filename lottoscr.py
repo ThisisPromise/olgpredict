@@ -43,32 +43,36 @@ LOTTERY_CONFIG = {
 # Custom CSS for number display
 st.markdown("""
 <style>
-.number-card {
-    padding: 10px;
-    border-radius: 10px;
-    margin: 10px;
-    text-align: center;
-    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
-}
-.number-badge {
-    display: inline-block;
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    background: #1E88E5;
-    color: white;
-    text-align: center;
-    line-height: 25px;
-    margin: 5px;
-}
-@media (max-width: 768px) {
-    .mobile-view { display: flex; flex-wrap: wrap; justify-content: center; }
-    .desktop-view { display: none; }
+    .number-card {
+        padding: 10px;
+        border-radius: 10px;
+        margin: 10px;
+        text-align: center;
+        box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
     }
-@media (min-width: 769px) {
-    .mobile-view { display: none; }
-    .desktop-view { display: flex; justify-content: center; }
+    .number-badge {
+        display: inline-block;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: #1E88E5;
+        color: white;
+        text-align: center;
+        line-height: 30px;
+        margin: 5px;
+        font-weight: bold;
     }
+    /* Mobile view - Flex Row */
+    @media (max-width: 768px) {
+        .mobile-view { display: flex; flex-wrap: wrap; justify-content: center; }
+        .desktop-view { display: none; }
+    }
+    /* Desktop view - Columns */
+    @media (min-width: 769px) {
+        .mobile-view { display: none; }
+        .desktop-view { display: flex; justify-content: center; }
+    }
+</style>
 """, unsafe_allow_html=True)
 
 if 'lotto_max_state' not in st.session_state:
@@ -207,9 +211,22 @@ def generate_predictions(base_prediction, config):
 
 # --- Display function ---
 
+
 def display_numbers(numbers, title):
-    """Display numbers in styled cards"""
-    st.markdown(f"<div class='number-card'><h3>{title}</h3>", unsafe_allow_html=True)
+    """Display numbers in styled cards with responsiveness"""
+
+    # Mobile View - Flexbox Row
+    st.markdown(f"""
+    <div class='number-card mobile-view'>
+        <h3>{title}</h3>
+        <div style="display: flex; flex-wrap: wrap; justify-content: center;">
+            {''.join(f'<div class="number-badge">{num}</div>' for num in numbers)}
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Desktop View - Columns
+    st.markdown(f"<div class='number-card desktop-view'><h3>{title}</h3>", unsafe_allow_html=True)
     cols = st.columns(len(numbers))
     for col, num in zip(cols, numbers):
         with col:
