@@ -12,7 +12,9 @@ from requests_html import HTMLSession
 from bs4 import BeautifulSoup
 import asyncio
 import nest_asyncio
+os.environ["PYPPETEER_NO_SIGNALS"] = "1"
 
+nest_asyncio.apply()
 tf.config.run_functions_eagerly(True)
 
 LOTTERY_CONFIG = {
@@ -63,7 +65,6 @@ if 'lotto_649_state' not in st.session_state:
 
 
 
-nest_asyncio.apply()
 
 def scrape_lottery(lottery_name):
     config = LOTTERY_CONFIG[lottery_name]
