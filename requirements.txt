@@ -20,3 +20,4 @@ requests-html
 lxml
 pyppeteer
 lxml_html_clean
+nest_asyncio
