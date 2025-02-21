@@ -6,6 +6,7 @@ import tensorflow as tf
 from datetime import datetime
 import time
 import schedule
+import os
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
@@ -64,25 +65,26 @@ if 'lotto_max_state' not in st.session_state:
 if 'lotto_649_state' not in st.session_state:
     st.session_state.lotto_649_state = 'Wednesday'  # Initial state for Lotto 649
 
+
 def scrape_lottery(lottery_name):
-    """Scrape lottery numbers using Selenium"""
     config = LOTTERY_CONFIG[lottery_name]
     try:
         options = Options()
         options.add_argument("--headless")
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
-
-        # Automatically handle the driver installation
-        service = Service(ChromeDriverManager().install())
-        driver = webdriver.Chrome(service=service, options=options)
         
+        # Set up ChromeDriver with correct permissions
+        chromedriver_path = ChromeDriverManager().install()
+        os.chmod(chromedriver_path, 0o755)
+        service = Service(chromedriver_path)
+        
+        driver = webdriver.Chrome(service=service, options=options)
         driver.get(config['url'])
         time.sleep(3)  # Wait for page load
         
-        # Update selector based on actual page structure
         raw_data = driver.find_element(By.CSS_SELECTOR, 
-                                       "ul.extra-bottom.draw-balls.remove-default-styles.ball-list").text
+                     "ul.extra-bottom.draw-balls.remove-default-styles.ball-list").text
         driver.quit()
         
         numbers = re.findall(r'\d+', raw_data)[:config['num_numbers']]
