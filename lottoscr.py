@@ -66,7 +66,7 @@ if 'lotto_649_state' not in st.session_state:
     st.session_state.lotto_649_state = 'Wednesday'  # Initial state for Lotto 649
 
 
-def scrape_lottery(lottery_name):
+
 
 def scrape_lottery(lottery_name):
     config = LOTTERY_CONFIG[lottery_name]
