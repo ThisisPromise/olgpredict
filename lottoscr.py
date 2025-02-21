@@ -242,7 +242,7 @@ def main():
                 pred_numbers = np.round(pred * LOTTERY_CONFIG['Lotto 649']['max_num']).astype(int)
                 
                 predictions = generate_predictions(pred_numbers, LOTTERY_CONFIG['Lotto 649'])
-                labels = [f"Best{st.session_state.lotto_649_state}    Prediction", 
+                labels = [f"Best {st.session_state.lotto_649_state}    Prediction", 
                           f"Better {st.session_state.lotto_649_state}   Prediction", 
                           f"Good {st.session_state.lotto_649_state}    Prediction"]
                 
