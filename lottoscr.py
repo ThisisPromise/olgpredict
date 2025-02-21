@@ -67,16 +67,19 @@ if 'lotto_649_state' not in st.session_state:
 
 
 def scrape_lottery(lottery_name):
+
+def scrape_lottery(lottery_name):
     config = LOTTERY_CONFIG[lottery_name]
     try:
         options = Options()
         options.add_argument("--headless")
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
-        options.binary_location = "/usr/bin/chromium-browser"
-        
-        # Set up ChromeDriver with correct permissions
-        chromedriver_path = ChromeDriverManager().install()
+        # Set the browser binary location (adjust if necessary)
+        options.binary_location = "/usr/bin/chromium-browser"  # or try "/usr/bin/chromium"
+
+        # Force a specific ChromeDriver version that matches your installed browser version
+        chromedriver_path = ChromeDriverManager(version="113.0.5672.63").install()
         os.chmod(chromedriver_path, 0o755)
         service = Service(chromedriver_path)
         
@@ -84,8 +87,8 @@ def scrape_lottery(lottery_name):
         driver.get(config['url'])
         time.sleep(3)  # Wait for page load
         
-        raw_data = driver.find_element(By.CSS_SELECTOR, 
-                     "ul.extra-bottom.draw-balls.remove-default-styles.ball-list").text
+        raw_data = driver.find_element(By.CSS_SELECTOR,
+            "ul.extra-bottom.draw-balls.remove-default-styles.ball-list").text
         driver.quit()
         
         numbers = re.findall(r'\d+', raw_data)[:config['num_numbers']]
