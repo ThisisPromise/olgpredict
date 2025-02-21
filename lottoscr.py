@@ -70,6 +70,9 @@ def scrape_lottery(lottery_name):
     try:
         options = Options()
         options.add_argument("--headless")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
+
         # Automatically handle the driver installation
         service = Service(ChromeDriverManager().install())
         driver = webdriver.Chrome(service=service, options=options)
