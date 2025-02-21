@@ -77,7 +77,7 @@ def scrape_lottery(lottery_name):
         options.add_argument("--disable-gpu")
         
    
-        chromedriver_path = ChromeDriverManager().install()
+        chromedriver_path = ChromeDriverManager(version="20.0.6099.224" ).install()
 
         print("Using ChromeDriver at:", chromedriver_path)
         os.chmod(chromedriver_path, 0o755)
