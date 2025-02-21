@@ -61,7 +61,7 @@ LOTTERY_CONFIG = {
 #     margin: 5px;
 # }
 
- st.markdown("""
+st.markdown("""
 <style>
             .number-card { text-align: center; margin-bottom: 10px; }
             .number-badge { 
