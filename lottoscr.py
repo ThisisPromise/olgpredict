@@ -8,6 +8,7 @@ import schedule
 import os
 import re
 import requests
+from requests_html import HTMLSession
 from bs4 import BeautifulSoup
 
 tf.config.run_functions_eagerly(True)
@@ -57,25 +58,29 @@ if 'lotto_max_state' not in st.session_state:
 if 'lotto_649_state' not in st.session_state:
     st.session_state.lotto_649_state = 'Wednesday'
 
+
+
+
 def scrape_lottery(lottery_name):
-    """Scrape lottery numbers using requests and BeautifulSoup"""
     config = LOTTERY_CONFIG[lottery_name]
     try:
-        response = requests.get(config['url'])
-        if response.status_code != 200:
-            st.error(f"Failed to fetch page, status code: {response.status_code}")
-            return None
-        soup = BeautifulSoup(response.text, 'html.parser')
-        element = soup.select_one(" extra-bottom draw-balls remove-default-styles  ball-list")
+        session = HTMLSession()
+        response = session.get(config['url'])
+        # Render JavaScript – you might adjust sleep time or wait conditions
+        response.html.render(timeout=20)
+        
+        element = response.html.find("ul.extra-bottom.draw-balls.remove-default-styles.ball-list", first=True)
         if not element:
             st.error("Could not locate lottery numbers element on the page.")
             return None
-        raw_data = element.get_text(separator=" ", strip=True)
+        
+        raw_data = element.text
         numbers = re.findall(r'\d+', raw_data)[:config['num_numbers']]
         return [int(n) for n in numbers]
     except Exception as e:
         st.error(f"Error scraping {lottery_name}: {str(e)}")
         return None
+
 
 def update_and_predict(lottery_name):
     """Update data and make predictions"""
