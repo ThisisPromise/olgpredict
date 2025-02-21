@@ -80,7 +80,7 @@ def scrape_lottery(lottery_name):
         # options.binary_location = "/usr/bin/chromium-browser"
         
         # Force a specific ChromeDriver version (if needed)
-        chromedriver_path = ChromeDriverManager(version="113.0.5672.63").install()
+        chromedriver_path = ChromeDriverManager().install()
         print("Using ChromeDriver at:", chromedriver_path)
         os.chmod(chromedriver_path, 0o755)
         service = Service(chromedriver_path)
