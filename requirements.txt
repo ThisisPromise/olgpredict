@@ -15,7 +15,6 @@ selenium==4.1.0
 streamlit==1.40.1
 tensorflow==2.13.0
 tensorflow-estimator==2.13.0
-tensorflow-intel==2.13.0
 tensorflow-io-gcs-filesystem==0.31.0
 urllib3-secure-extra==0.1.0
 
