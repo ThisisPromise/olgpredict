@@ -66,7 +66,7 @@ def scrape_lottery(lottery_name):
             st.error(f"Failed to fetch page, status code: {response.status_code}")
             return None
         soup = BeautifulSoup(response.text, 'html.parser')
-        element = soup.select_one("ul.extra-bottom.draw-balls.remove-default-styles.ball-list")
+        element = soup.select_one(" extra-bottom draw-balls remove-default-styles  ball-list")
         if not element:
             st.error("Could not locate lottery numbers element on the page.")
             return None
