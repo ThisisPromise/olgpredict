@@ -9,6 +9,7 @@ import os
 import re
 import requests
 from bs4 import BeautifulSoup
+from playwright.sync_api import sync_playwright
 
 tf.config.run_functions_eagerly(True)
 
@@ -57,25 +58,30 @@ if 'lotto_max_state' not in st.session_state:
 if 'lotto_649_state' not in st.session_state:
     st.session_state.lotto_649_state = 'Wednesday'
 
+
+
 def scrape_lottery(lottery_name):
-    """Scrape lottery numbers using requests and BeautifulSoup"""
     config = LOTTERY_CONFIG[lottery_name]
     try:
-        response = requests.get(config['url'])
-        if response.status_code != 200:
-            st.error(f"Failed to fetch page, status code: {response.status_code}")
-            return None
-        soup = BeautifulSoup(response.text, 'html')
-        element = soup.select_one("ul.extra-bottom.draw-balls.remove-default-styles.ball-list")
-        if not element:
-            st.error("Could not locate lottery numbers element on the page.")
-            return None
-        raw_data = element.get_text(separator=" ", strip=True)
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True, args=["--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu"])
+            page = browser.new_page()
+            page.goto(config['url'])
+            page.wait_for_timeout(3000)  # wait 3 seconds for page load
+            element = page.query_selector("ul.extra-bottom.draw-balls.remove-default-styles.ball-list")
+            if not element:
+                st.error("Could not locate lottery numbers element on the page.")
+                browser.close()
+                return None
+            raw_data = element.text_content()
+            browser.close()
+        
         numbers = re.findall(r'\d+', raw_data)[:config['num_numbers']]
         return [int(n) for n in numbers]
     except Exception as e:
         st.error(f"Error scraping {lottery_name}: {str(e)}")
         return None
+
 
 def update_and_predict(lottery_name):
     """Update data and make predictions"""
