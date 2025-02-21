@@ -76,7 +76,7 @@ def scrape_lottery(lottery_name):
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
         # Set the browser binary location (adjust if necessary)
-        options.binary_location = "/usr/bin/chromium-browser"  # or try "/usr/bin/chromium"
+        options.binary_location = "/usr/bin/chromium"  # or try "/usr/bin/chromium"
 
         # Force a specific ChromeDriver version that matches your installed browser version
         chromedriver_path = ChromeDriverManager(version="113.0.5672.63").install()
